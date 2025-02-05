@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Merger</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet">
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+   <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        header, footer {
+            width: 100%;
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+        }
+        header {
+            position: fixed;
+            top: 0;
+        }
+        footer {
+            position: fixed;
+            bottom: 0;
+        }
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            margin-top: 60px;
+            margin-bottom: 40px;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 25px;
+            font-size: 16px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #6aff06;
+        }
+        label:hover{
+            background-color: aqua!important;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>PDF Merger</h1>
+    </header>
+    <main class="d-flex justify-content-center align-items-center">
+        <h2>Merge PDF Files</h2>
+        <label for="files" class=" p-3 px-4 mb-5 mt-5 border-3 border-blac shadow">Choose file </label>
+        <input type="file" id="files" accept="application/pdf"  multiple style="display: none;">
+        <button onclick="mergeMultiplePDFs()">Merge Multiple PDFs</button>
+    </main> 
+    <footer>
+        <p>&copy; 2023 PDF Merger. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script>
+        async function mergeMultiplePDFs() {
+            const files = document.getElementById('files').files;
+
+            if (files.length < 2) {
+                alert('Please select at least two PDF files.');
+                return;
+            }
+
+            const pdfDoc = await PDFLib.PDFDocument.create();
+
+            for (const file of files) {
+                const pdfBytes = await file.arrayBuffer();
+                const pdf = await PDFLib.PDFDocument.load(pdfBytes);
+                const copiedPages = await pdfDoc.copyPages(pdf, pdf.getPageIndices());
+                copiedPages.forEach((page) => pdfDoc.addPage(page));
+            }
+
+            const mergedPdfBytes = await pdfDoc.save();
+            const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'merged.pdf';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    </script>
+</body>
+</html>
